@@ -11,4 +11,4 @@ A simple script to download the books from Project Gutenburg that are in a parti
 If you want to download new books, you will have to wait for the catalog CSV to be updated (it is updated weekly). Then, delete the local CSV that the script already downloaded. It will download a new one and only download the new books.
 
 ## Lute Uploader
-This script should be configured similarly to the downloader. It will upload all texts in a specified directory to Lute as books.
+This script should be configured similarly to the downloader. It will upload all texts in a specified directory to Lute as books, unless they already exist. It uses the .txt file's name as the title of the book.
