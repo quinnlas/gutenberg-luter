@@ -1,0 +1,11 @@
+{
+  "name": "gutenburg-luter",
+  "version": "1.0.0",
+  "description": "A simple script to download the books from Project Gutenburg that are in a particular language.",
+  "main": "index.js",
+  "author": "Quinn Las",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "papaparse": "^5.4.1"
+  }
+}
