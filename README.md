@@ -12,3 +12,9 @@ If you want to download new books, you will have to wait for the catalog CSV to 
 
 ## Lute Uploader
 This script should be configured similarly to the downloader. It will upload all texts in a specified directory to Lute as books, unless they already exist. It uses the .txt file's name as the title of the book.
+
+## Lute Deleter
+Configured as other scripts. Deletes all active books in Lute. Use with caution.
+
+## Wikipedia Downloader.
+Configured as other scripts. Downloads the top 500 wikipedia articles for a language as txt files.
