@@ -78,6 +78,8 @@ async function createBook(title, text) {
             cookie: COOKIE
         }
     })
+    // because the route is built to respond to the frontend, it always gives a 200 status code and errors are displayed in the HTML
+    // therefore we need to check the HTML manually if something is not working
     // fs.writeFileSync('debug.html', res.data)
 }
 
