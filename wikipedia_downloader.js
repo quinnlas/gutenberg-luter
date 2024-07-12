@@ -7,9 +7,14 @@ const REFERENCES_HEADER_TEXT = 'Referenser'
 
 const axios = require('axios').default
 const pageInfos = require(JSON_PATH)
-const {parse} = require('node-html-parser')
+const cheerio = require('cheerio')
 const fs = require('fs')
 const path = require('path')
+
+/* TODO
+- disambiguation pages... not much I can do about them being in the list, although I could skip downloading them
+- reference clipping doesn't usually work, doesn't handle -1 case after calling .find
+*/
 
 async function main() {
     for (let pageInfo of pageInfos) {
@@ -25,7 +30,8 @@ async function main() {
 
         await new Promise(rs => setTimeout(rs, 2000))
 
-        const url = WIKI_LINK + pageInfo.article
+        const articleURL = pageInfo.article.replaceAll(/ /g, "_")
+        const url = WIKI_LINK + articleURL
         const res = await axios(url)
         const html = res.data
         const page = parsePage(html)
@@ -33,28 +39,75 @@ async function main() {
     }
 }
 
+// the "proper" way to get the text would be to render the whole HTML with a browser, otherwise there is not really a parser library accurate enough
+const lineBreakingTagsSet = {
+    'address': true,
+    'article': true,
+    'aside': true,
+    'blockquote': true,
+    'br': true,
+    'canvas': true,
+    'dd': true,
+    'div': true,
+    'dl': true,
+    'dt': true,
+    'fieldset': true,
+    'figcaption': true,
+    'figure': true,
+    'footer': true,
+    'form': true,
+    'h1': true,
+    'h2': true,
+    'h3': true,
+    'h4': true,
+    'h5': true,
+    'h6': true,
+    'header': true,
+    'hr': true,
+    'li': true,
+    'main': true,
+    'nav': true,
+    'noscript': true,
+    'ol': true,
+    'p': true,
+    'pre': true,
+    'section': true,
+    'table': true,
+    'tfoot': true,
+    'ul': true,
+    'video': true
+}
+
+function innerText(element) {
+    function getTextLoop(element) {
+        const texts = [];
+        Array.from(element.childNodes || []).forEach(node => {
+            if (node.nodeType === 3) {
+                texts.push(node.data);
+            } else {
+                if (lineBreakingTagsSet[node.name]) {
+                    texts.push('\n')
+                }
+                texts.push(...getTextLoop(node));
+            }
+        });
+        return texts;
+    }
+    return getTextLoop(element).join(' ');
+}
+
 function parsePage(html) {
-    const root = parse(html, {
-        blockTextElements: {
-            // a bit confusing, but block: false actually blocks it
-            // otherwise the text of these elements will show up in the .txt file
-            script: false,
-            noscript: false,
-            style: false,
-            pre: false
-        }
-    })
+    const root = cheerio.load(html)
 
-    const mainDivs = root.querySelectorAll('.mw-content-ltr')
+    // delete elements whose text should not appear
+    // otherwise they will be included when generating text
+    root('style').remove()
+
+    const mainDivs = root('.mw-content-ltr')
     if (mainDivs.length !== 1) throw Error('wrong number of main divs')
-    const mainDiv = mainDivs[0]
-    
-    // delete references div and everything after it
-    const refIndex = mainDiv.childNodes.findIndex(node => 
-        node.rawTagName === 'H2' && node.textContent === REFERENCES_HEADER_TEXT)
-    mainDiv.childNodes = mainDiv.childNodes.slice(0, refIndex)
+    const mainDiv = mainDivs.first()
 
-    return mainDiv.text
+    return innerText(mainDiv[0])
 }
 
 main().catch(console.error)

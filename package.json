@@ -6,7 +6,7 @@
   "author": "Quinn Las",
   "dependencies": {
     "axios": "^1.7.2",
-    "node-html-parser": "^6.1.13",
+    "cheerio": "^1.0.0-rc.12",
     "papaparse": "^5.4.1"
   }
 }
