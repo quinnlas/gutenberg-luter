@@ -11,11 +11,6 @@ const cheerio = require('cheerio')
 const fs = require('fs')
 const path = require('path')
 
-/* TODO
-- disambiguation pages... not much I can do about them being in the list, although I could skip downloading them
-- reference clipping doesn't usually work, doesn't handle -1 case after calling .find
-*/
-
 async function main() {
     for (let pageInfo of pageInfos) {
         const title = `Wikipedia - ${pageInfo.article}.txt`
@@ -105,9 +100,20 @@ function parsePage(html) {
 
     const mainDivs = root('.mw-content-ltr')
     if (mainDivs.length !== 1) throw Error('wrong number of main divs')
-    const mainDiv = mainDivs.first()
+    const mainDiv = mainDivs[0]
 
-    return innerText(mainDiv[0])
+    // get text
+    let text = innerText(mainDiv)
+
+    // remove references
+    const referencesIndex = text.lastIndexOf(REFERENCES_HEADER_TEXT)
+    if (referencesIndex !== -1) text = text.slice(0, referencesIndex)
+
+    // remove extra new lines
+    text = text.split('\n').map(l => l.trimEnd()).join('\n')
+    text = text.replaceAll(/\n\n\n+/g, "\n\n")
+    
+    return text
 }
 
 main().catch(console.error)
